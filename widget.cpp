@@ -12,5 +12,6 @@ Widget::~Widget()
 {
     delete ui;
     //this is a update test;
+    //yum did the test too;
 }
 
