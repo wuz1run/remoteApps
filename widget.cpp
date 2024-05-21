@@ -11,5 +11,6 @@ Widget::Widget(QWidget *parent)
 Widget::~Widget()
 {
     delete ui;
+    //this is a update test;
 }
 
