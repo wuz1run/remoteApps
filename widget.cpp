@@ -1,5 +1,10 @@
 #include "widget.h"
 #include "ui_widget.h"
+#include "QTcpSocket"
+#include "QTcpServer"
+#include "QProcess"
+#include "QString"
+QString Ip;
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
@@ -11,8 +16,13 @@ Widget::Widget(QWidget *parent)
 Widget::~Widget()
 {
     delete ui;
-    //this is a update test;
-    //yum did the test too;
-    //saki did the test again;
+
+}
+
+
+void Widget::on_pushButton_clicked()
+{
+    Ip=ui->IP->text();
+
 }
 

@@ -2,7 +2,8 @@
 #define WIDGET_H
 
 #include <QWidget>
-
+#include "QTcpSocket"
+#include "QProcess"
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
 QT_END_NAMESPACE
@@ -15,7 +16,12 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+private slots:
+    void on_pushButton_clicked();
+
 private:
     Ui::Widget *ui;
+    QTcpSocket *socket;
+    QTcpServer *server;
 };
 #endif // WIDGET_H
