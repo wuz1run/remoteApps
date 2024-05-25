@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "QTcpSocket"
+#include "QTcpServer"
 #include "QProcess"
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -18,7 +19,7 @@ public:
 
 private slots:
     void on_pushButton_clicked();
-
+    void readData();
 private:
     Ui::Widget *ui;
     QTcpSocket *socket;
