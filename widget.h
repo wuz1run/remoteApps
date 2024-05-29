@@ -22,6 +22,10 @@ private slots:
     void on_pushButton_clicked();
     void readData();
     void NewConnectionHandler();
+    void handleLnk();
+    void handleExe();
+    void rdpConnection();
+
 private:
     Ui::Widget *ui;
     QTcpSocket *socket;
