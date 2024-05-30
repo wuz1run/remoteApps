@@ -25,6 +25,13 @@ private slots:
     void handleLnk();
     void handleExe();
     void rdpConnection();
+    bool isLnkFile(const QByteArray &link);
+    int bytes2short(const QByteArray &bytes, int off);
+    QString getNullDelimitedString(const QByteArray &bytes, int off);
+    QString parseLink(const QString &filePath);
+    QString buildCommand(const QString &ip, const QString &filePath, const QString &username, const QString &password);
+
+    void on_TestButton_clicked();
 
 private:
     Ui::Widget *ui;

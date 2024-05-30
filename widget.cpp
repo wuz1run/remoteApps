@@ -111,6 +111,9 @@ void Widget::on_pushButton_clicked()
 }
 void Widget::handleLnk()
 {
+    QString testLnkPath="C:\\Test\\Test2.lnk";
+    QString ans=parseLink(testLnkPath);
+    QMessageBox::warning(this,"test",ans);
 
 }
 
@@ -122,5 +125,72 @@ void Widget::handleExe()
 void Widget::rdpConnection()
 {
 
+}
+bool Widget::isLnkFile(const QByteArray &link) {
+    return link[0x00] == 0x4C;  // 76, 'L', 0x4C代表lnk文件格式
+}
+
+int Widget::bytes2short(const QByteArray &bytes, int off) {
+    return static_cast<unsigned char>(bytes[off]) | (static_cast<unsigned char>(bytes[off + 1]) << 8);
+}
+
+QString Widget::getNullDelimitedString(const QByteArray &bytes, int off) {
+    int len = 0;
+    while (bytes[off + len] != '\0') {
+        len++;
+    }
+    return QString::fromUtf8(bytes.mid(off, len));
+}
+
+QString Widget::parseLink(const QString &filePath) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        throw std::runtime_error("File not found");
+    }
+
+    QByteArray link = file.readAll();
+    file.close();
+
+    if (!isLnkFile(link)) {
+        qDebug() << "Not a .lnk file";
+        return " ";
+    }
+
+    unsigned char flags = link[0x14];
+
+    int shell_len = 0;
+    if (flags & 0x1) {  // 判断是否包含shell item id list段
+        shell_len = bytes2short(link, 0x4C) + 2;  // 获取shell item id list段的总长度，加2是为了将link[0x4c]本身的长度计算在内
+    }
+
+    int file_start = 0x4C + shell_len;
+    int local_sys_off = static_cast<unsigned char>(link[file_start + 0x10]) + file_start;
+
+    QString real_file = getNullDelimitedString(link, local_sys_off);
+    qDebug() << "Real file path:" << real_file;
+    return real_file;
+}
+
+void Widget::on_TestButton_clicked()
+{
+    QString testLnkPath="C:\\Test\\Test2.lnk";
+    QString ans=parseLink(testLnkPath);
+    Ip=ui->IP->text();
+    QString username="Administrator";
+    QString password="Wuzirun371329@";
+    QString command=buildCommand(Ip,ans,username,password);
+    QProcess::execute(command);
+
+
+
+}
+QString Widget::buildCommand(const QString &ip, const QString &filePath, const QString &username, const QString &password) {
+    // 使用QString::arg()来构建命令字符串
+    QString command = QString("xfreerdp /v:%1 /u:%2 /p:%3 /app:\"%4\"")
+                          .arg(ip)
+                          .arg(username)
+                          .arg(password)
+                          .arg(filePath);
+    return command;
 }
 
