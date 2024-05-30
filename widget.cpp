@@ -173,13 +173,16 @@ QString Widget::parseLink(const QString &filePath) {
 
 void Widget::on_TestButton_clicked()
 {
-    QString testLnkPath="C:\\Test\\Test2.lnk";
+    QString testLnkPath= QFileDialog::getOpenFileName(nullptr,"Choose Lnk Files");
     QString ans=parseLink(testLnkPath);
     Ip=ui->IP->text();
     QString username="Administrator";
     QString password="Wuzirun371329@";
     QString command=buildCommand(Ip,ans,username,password);
-    QProcess::execute(command);
+    QProcess process;
+
+    process.start(command);
+
 
 
 
