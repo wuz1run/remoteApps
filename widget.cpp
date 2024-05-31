@@ -6,7 +6,7 @@
 #include "QString"
 #include "QFile"
 #include "QFileDialog"
-#include "QMessageBox";
+#include "QMessageBox"
 #include "QDebug"
 QString Ip;
 QFile file;
@@ -111,7 +111,7 @@ void Widget::on_pushButton_clicked()
 }
 void Widget::handleLnk()
 {
-    QString testLnkPath="C:\\Test\\Test2.lnk";
+    QString testLnkPath="/home/saki/Desktop/QQ.lnk";
     QString ans=parseLink(testLnkPath);
     QMessageBox::warning(this,"test",ans);
 
@@ -153,7 +153,7 @@ QString Widget::parseLink(const QString &filePath) {
 
     if (!isLnkFile(link)) {
         qDebug() << "Not a .lnk file";
-        return " ";
+        return "1111";
     }
 
     unsigned char flags = link[0x14];
@@ -173,19 +173,18 @@ QString Widget::parseLink(const QString &filePath) {
 
 void Widget::on_TestButton_clicked()
 {
-    QString testLnkPath= QFileDialog::getOpenFileName(nullptr,"Choose Lnk Files");
+    QString testLnkPath= QFileDialog::getOpenFileName(nullptr,"choose file");
     QString ans=parseLink(testLnkPath);
+    QMessageBox::warning(this,"test",ans);
     Ip=ui->IP->text();
     QString username="Administrator";
     QString password="Wuzirun371329@";
     QString command=buildCommand(Ip,ans,username,password);
+    QList <QString>commands;
+    commands.append(command);
+    qDebug()<<command;
     QProcess process;
-
-    process.start(command);
-
-
-
-
+    process.startDetached(command);
 }
 QString Widget::buildCommand(const QString &ip, const QString &filePath, const QString &username, const QString &password) {
     // 使用QString::arg()来构建命令字符串
@@ -194,6 +193,12 @@ QString Widget::buildCommand(const QString &ip, const QString &filePath, const Q
                           .arg(username)
                           .arg(password)
                           .arg(filePath);
+    qDebug()<<command;
+    ui->textEdit->setText(command);
+
     return command;
 }
+
+
+
 

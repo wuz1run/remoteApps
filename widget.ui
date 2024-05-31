@@ -62,6 +62,16 @@
     <string>Test Button</string>
    </property>
   </widget>
+  <widget class="QTextEdit" name="textEdit">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>110</y>
+     <width>271</width>
+     <height>171</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
