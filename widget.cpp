@@ -10,6 +10,8 @@
 #include "QDebug"
 QString Ip;
 QFile file;
+QString LnkInLinux;
+QString ExeInLinux;
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
@@ -78,9 +80,7 @@ void Widget::readData()
             qDebug() << "No file selected";
 
             return;
-
         }
-
         file.setFileName(filePath);
 
         if (!file.open(QIODevice::WriteOnly)) {
@@ -109,22 +109,40 @@ void Widget::on_pushButton_clicked()
     socket->connectToHost(QHostAddress(Ip),4567);
      //连接socket
 }
-void Widget::handleLnk()
+void Widget::handleLnk(const QString &File)
 {
-    QString testLnkPath="/home/saki/Desktop/QQ.lnk";
-    QString ans=parseLink(testLnkPath);
-    QMessageBox::warning(this,"test",ans);
+    QString ans=parseLink(File);
+    QMessageBox::warning(this,"lnk",ans);
 
 }
 
-void Widget::handleExe()
+void Widget::handleExe(const QString &File)
 {
-
+    QMessageBox::warning(this,"exe",File);
 }
 
 void Widget::rdpConnection()
 {
 
+}
+
+void Widget::openedLnk(const QString &File)
+{
+    QFileInfo fileTemp(File);
+    QString extend=fileTemp.suffix();
+    if(extend=="lnk")
+    {
+        handleLnk(File);
+    }
+    else if(extend=="exe")
+    {
+        handleExe(File);
+    }
+
+}
+void Widget::openedExe(const QString &File)
+{
+    QMessageBox::warning(this,"this",File);
 }
 bool Widget::isLnkFile(const QByteArray &link) {
     return link[0x00] == 0x4C;  // 76, 'L', 0x4C代表lnk文件格式
@@ -195,7 +213,6 @@ QString Widget::buildCommand(const QString &ip, const QString &filePath, const Q
                           .arg(filePath);
     qDebug()<<command;
     ui->textEdit->setText(command);
-
     return command;
 }
 

@@ -17,14 +17,17 @@ class Widget : public QWidget
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
+     void openedLnk(const QString &File);
+     void openedExe(const QString &File);
 
 private slots:
     void on_pushButton_clicked();
     void readData();
     void NewConnectionHandler();
-    void handleLnk();
-    void handleExe();
+    void handleLnk(const QString &File);
+    void handleExe(const QString &File);
     void rdpConnection();
+
     bool isLnkFile(const QByteArray &link);
     int bytes2short(const QByteArray &bytes, int off);
     QString getNullDelimitedString(const QByteArray &bytes, int off);
