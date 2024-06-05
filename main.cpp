@@ -9,15 +9,17 @@ int main(int argc, char *argv[])
     Widget w;
     parser.process(a);
     QString Path;
-    QString extend;
     if(!parser.positionalArguments().isEmpty())
     {
         Path=parser.positionalArguments().first();
     }
+    //解析启动参数，获得地址
     if(!Path.isEmpty())
     {
-        w.openedLnk(Path);
+        w.openedFile(Path);
     }
+    //调用主窗口的函数，openedfile
      w.show();
+    //主窗口的show函数
     return a.exec();
 }
