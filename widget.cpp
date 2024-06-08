@@ -10,6 +10,7 @@
 #include "QDebug"
 QString Ip;
 QFile file;
+
 QString LnkInLinux;
 QString ExeInLinux;
 Widget::Widget(QWidget *parent)
@@ -66,8 +67,6 @@ void Widget::NewConnectionHandler()
     //复制连接中的socket给另一个函数使用
 }
 
-
-
 void Widget::readData()
 {
     qDebug()<<"the widget is ready to read data";
@@ -98,35 +97,22 @@ void Widget::readData()
     //将data写到file中
     file.close();
     //解除占用
-
 }
-
 void Widget::on_pushButton_clicked()
 {
     Ip=ui->IP->text();
-     qDebug()<<"server opened";
+    qDebug()<<"server opened";
     //获取输入的IP
     socket->connectToHost(QHostAddress(Ip),4567);
-     //连接socket
+        //连接socket
 }
-void Widget::handleLnk(const QString &File)
-{
-    QString ans=parseLink(File);
-    QMessageBox::warning(this,"lnk",ans);
-
-}
-
-void Widget::handleExe(const QString &File)
-{
-    QMessageBox::warning(this,"exe",File);
-}
-
-void Widget::rdpConnection()
-{
-
-}
-
-void Widget::openedLnk(const QString &File)
+/*
+ * 以上是TCP相关的代码
+ *
+ *
+ *
+ */
+void Widget::openedFile(const QString &File)
 {
     QFileInfo fileTemp(File);
     QString extend=fileTemp.suffix();
@@ -140,10 +126,24 @@ void Widget::openedLnk(const QString &File)
     }
 
 }
-void Widget::openedExe(const QString &File)
+void Widget::handleLnk(const QString &File)
 {
-    QMessageBox::warning(this,"this",File);
+    QString ans=parseLink(File);
+    QMessageBox::warning(this,"lnk",ans);
+
 }
+
+void Widget::handleExe(const QString &File)
+{
+    QMessageBox::warning(this,"exe",File);
+}
+/*以上是处理图形化界面/终端的代码
+ *
+ *
+ *
+ *
+ */
+
 bool Widget::isLnkFile(const QByteArray &link) {
     return link[0x00] == 0x4C;  // 76, 'L', 0x4C代表lnk文件格式
 }
@@ -188,7 +188,15 @@ QString Widget::parseLink(const QString &filePath) {
     qDebug() << "Real file path:" << real_file;
     return real_file;
 }
-
+/*
+ *
+ *
+ *
+ * 以上是解析lnk的代码
+ *
+ *
+ *
+ */
 void Widget::on_TestButton_clicked()
 {
     QString testLnkPath= QFileDialog::getOpenFileName(nullptr,"choose file");
@@ -216,6 +224,17 @@ QString Widget::buildCommand(const QString &ip, const QString &filePath, const Q
     return command;
 }
 
+void Widget::rdpConnection()
+{
 
+}
+/*
+ *
+ *
+ *
+ * 以上是处理ip和rdp连接的代码，process的代码最后要移动到rdpConnection之中
+ *
+ *
+ */
 
 

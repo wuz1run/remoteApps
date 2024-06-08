@@ -17,8 +17,7 @@ class Widget : public QWidget
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
-     void openedLnk(const QString &File);
-     void openedExe(const QString &File);
+     void openedFile(const QString &File);
 
 private slots:
     void on_pushButton_clicked();
