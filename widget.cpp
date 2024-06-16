@@ -9,10 +9,13 @@
 #include "QMessageBox"
 #include "QDebug"
 QString Ip;
+QString UsernamE;
+QString Password;
 QFile file;
 
 QString LnkInLinux;
 QString ExeInLinux;
+
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
@@ -136,6 +139,13 @@ void Widget::handleLnk(const QString &File)
 void Widget::handleExe(const QString &File)
 {
     QMessageBox::warning(this,"exe",File);
+    QFile ExeFile(File);
+    QByteArray FileArray=ExeFile.readAll();
+    socket->write(FileArray);
+    socket->flush();
+    QMessageBox::warning(this,"sent executable",File);
+
+
 }
 /*以上是处理图形化界面/终端的代码
  *
@@ -203,8 +213,8 @@ void Widget::on_TestButton_clicked()
     QString ans=parseLink(testLnkPath);
     QMessageBox::warning(this,"test",ans);
     Ip=ui->IP->text();
-    QString username="Administrator";
-    QString password="Wuzirun371329@";
+    QString username=UsernamE;
+    QString password=Password;
     QString command=buildCommand(Ip,ans,username,password);
     QList <QString>commands;
     commands.append(command);
@@ -237,4 +247,23 @@ void Widget::rdpConnection()
  *
  */
 
+
+void Widget::on_OpenSettings_clicked()
+{
+    openDialog();
+}
+
+void Widget::openDialog()
+{
+    QDialog dialogue(nullptr);
+    Ui_Dialog dialog;
+    dialog.setupUi(&dialogue);
+    dialogue.exec();
+
+}
+Ui_Dialog::~Ui_Dialog()
+{
+    UsernamE=Usernamer->text();
+    Password=Passworder->text();
+}
 

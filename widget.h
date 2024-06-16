@@ -6,6 +6,7 @@
 #include "QTcpServer"
 #include "QProcess"
 #include "QDebug"
+#include "ui_dialog.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
 QT_END_NAMESPACE
@@ -34,6 +35,10 @@ private slots:
     QString buildCommand(const QString &ip, const QString &filePath, const QString &username, const QString &password);
 
     void on_TestButton_clicked();
+
+
+    void on_OpenSettings_clicked();
+    void openDialog();
 
 private:
     Ui::Widget *ui;

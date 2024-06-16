@@ -13,9 +13,11 @@ SOURCES += \
     widget.cpp
 
 HEADERS += \
+    ui_dialog.h \
     widget.h
 
 FORMS += \
+    dialog.ui \
     widget.ui
 
 # Default rules for deployment.

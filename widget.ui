@@ -95,6 +95,19 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <string>Debug</string>
    </property>
   </widget>
+  <widget class="QToolButton" name="OpenSettings">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>150</y>
+     <width>20</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
