@@ -37,6 +37,12 @@ Widget::~Widget()
     delete ui;
 
 }
+Ui_Dialog::~Ui_Dialog()
+{
+    UsernamE=Usernamer->text();
+    Password=Passworder->text();
+}
+
 //析构函数
 /**************************************
  * 下面我写了三个函数，void handleLnk();void handleExe();void rdpConnection();
@@ -258,12 +264,9 @@ void Widget::openDialog()
     QDialog dialogue(nullptr);
     Ui_Dialog dialog;
     dialog.setupUi(&dialogue);
+    dialog.Usernamer->setText(UsernamE);
+    dialog.Passworder->setText(Password);
     dialogue.exec();
 
-}
-Ui_Dialog::~Ui_Dialog()
-{
-    UsernamE=Usernamer->text();
-    Password=Passworder->text();
 }
 

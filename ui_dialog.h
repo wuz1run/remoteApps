@@ -24,7 +24,7 @@ public:
     QDialogButtonBox *buttonBox;
     QLineEdit *Usernamer;
     QLineEdit *Passworder;
-    QLabel *Username;
+    QLabel *lable1;
     QLabel *label;
     ~Ui_Dialog();
     void setupUi(QDialog *Dialog)
@@ -39,16 +39,16 @@ public:
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
         Usernamer = new QLineEdit(Dialog);
         Usernamer->setObjectName(QStringLiteral("Usernamer"));
-        Usernamer->setGeometry(QRect(110, 90, 113, 21));
+        Usernamer->setGeometry(QRect(90, 100, 113, 21));
         Passworder = new QLineEdit(Dialog);
         Passworder->setObjectName(QStringLiteral("Passworder"));
-        Passworder->setGeometry(QRect(110, 130, 113, 21));
-        Username = new QLabel(Dialog);
-        Username->setObjectName(QStringLiteral("Username"));
-        Username->setGeometry(QRect(110, 70, 61, 16));
+        Passworder->setGeometry(QRect(100, 170, 113, 21));
+        lable1 = new QLabel(Dialog);
+        lable1->setObjectName(QStringLiteral("lable1"));
+        lable1->setGeometry(QRect(90, 40, 131, 61));
         label = new QLabel(Dialog);
         label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(110, 110, 61, 16));
+        label->setGeometry(QRect(100, 130, 121, 41));
 
         retranslateUi(Dialog);
         QObject::connect(buttonBox, SIGNAL(accepted()), Dialog, SLOT(accept()));
@@ -60,15 +60,14 @@ public:
     void retranslateUi(QDialog *Dialog)
     {
         Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
-        Username->setText(QApplication::translate("Dialog", "UserName", nullptr));
+        lable1->setText(QApplication::translate("Dialog", "UserName", nullptr));
         label->setText(QApplication::translate("Dialog", "Password", nullptr));
     } // retranslateUi
 
 };
 
 namespace Ui {
-class Dialog: public Ui_Dialog {private slots:
-};
+    class Dialog: public Ui_Dialog {};
 } // namespace Ui
 
 QT_END_NAMESPACE
