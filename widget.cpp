@@ -278,9 +278,9 @@ void Widget::openDialog()
         QTextStream out(&config);
         Ip=ui->IP->text();
         if (config.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            out << Ip << endl;
-            out << UsernamE << endl;
-            out << Password << endl;
+            out << Ip << Qt::endl;
+            out << UsernamE << Qt::endl;
+            out << Password << Qt::endl;
             config.close();
         } else {
             qDebug() << "Failed to open config file for writing";

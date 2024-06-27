@@ -3,21 +3,25 @@
 
 #include <QMainWindow>
 #include <QSystemTrayIcon>
-#include <QWidget>
-#include "widget.h"
+#include <QMenu>
+#include <QAction>
+
 class trayIcon : public QMainWindow
 {
     Q_OBJECT
+
 public:
-    trayIcon(QWidget *parent = nullptr);
-    void setTrayicon(const QSystemTrayIcon &newTrayicon);
+    explicit trayIcon(QWidget *parent = nullptr);
 
 private:
     QSystemTrayIcon trayicon;
+    QMenu *trayMenu;
+    QAction *showAction;
+    QAction *quitAction;
 
-
-
-signals:
+private slots:
+    void showMainWindow();
+    void quitApplication();
 };
 
 #endif // TRAYICON_H
