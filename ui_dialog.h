@@ -15,7 +15,7 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
-
+#include <QMessageBox>
 QT_BEGIN_NAMESPACE
 
 class Ui_Dialog
@@ -26,7 +26,6 @@ public:
     QLineEdit *Passworder;
     QLabel *lable1;
     QLabel *label;
-    ~Ui_Dialog();
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
@@ -67,7 +66,10 @@ public:
 };
 
 namespace Ui {
-    class Dialog: public Ui_Dialog {};
+class Dialog: public Ui_Dialog {private slots:
+
+private:
+};
 } // namespace Ui
 
 QT_END_NAMESPACE

@@ -39,10 +39,12 @@ private slots:
 
     void on_OpenSettings_clicked();
     void openDialog();
-
+    void readconfig();
+    QString getIp();
 private:
     Ui::Widget *ui;
     QTcpSocket *socket;
     QTcpServer *server;
+    Ui_Dialog dialog;
 };
 #endif // WIDGET_H

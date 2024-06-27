@@ -111,4 +111,7 @@
    </hints>
   </connection>
  </connections>
+ <slots>
+  <signal>signal1()</signal>
+ </slots>
 </ui>

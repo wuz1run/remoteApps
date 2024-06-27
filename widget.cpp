@@ -12,10 +12,10 @@ QString Ip;
 QString UsernamE;
 QString Password;
 QFile file;
-
 QString LnkInLinux;
 QString ExeInLinux;
-
+Ui_Dialog dialog;
+QFile config("/usr/share/RemoteAPPs/config");
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
@@ -27,7 +27,12 @@ Widget::Widget(QWidget *parent)
     //server监听任何QHostAddress和4567端口
     connect(server,&QTcpServer::newConnection,this,&Widget::NewConnectionHandler);
     //将Tcpserver的newConnection 信号与Widget里的NewConnectionHandler连接，让NewConnectionHandler来处理信号
+    config.open(QIODevice::ReadOnly | QIODevice::Text);
+    QTextStream in(&config);
     ui->setupUi(this);
+    ui->IP->setText(in.readLine());
+    config.close();
+
    //Ui设置
 
 }
@@ -37,11 +42,11 @@ Widget::~Widget()
     delete ui;
 
 }
-Ui_Dialog::~Ui_Dialog()
+QString Widget::getIp()
 {
-    UsernamE=Usernamer->text();
-    Password=Passworder->text();
+    return ui->IP->text();
 }
+
 
 //析构函数
 /**************************************
@@ -252,8 +257,6 @@ void Widget::rdpConnection()
  *
  *
  */
-
-
 void Widget::on_OpenSettings_clicked()
 {
     openDialog();
@@ -261,12 +264,63 @@ void Widget::on_OpenSettings_clicked()
 
 void Widget::openDialog()
 {
-    QDialog dialogue(nullptr);
-    Ui_Dialog dialog;
-    dialog.setupUi(&dialogue);
+    QDialog *dialogue = new QDialog(this);
+    readconfig();
+    dialog.setupUi(dialogue);
     dialog.Usernamer->setText(UsernamE);
     dialog.Passworder->setText(Password);
-    dialogue.exec();
 
+    // Connect to accepted signal from QDialog itself
+    connect(dialogue, &QDialog::accepted, this, [this]() {
+        UsernamE = dialog.Usernamer->text();
+        Password = dialog.Passworder->text();
+
+        QTextStream out(&config);
+        Ip=ui->IP->text();
+        if (config.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            out << Ip << endl;
+            out << UsernamE << endl;
+            out << Password << endl;
+            config.close();
+        } else {
+            qDebug() << "Failed to open config file for writing";
+        }
+
+    });
+
+    dialogue->exec();
 }
+
+
+void Widget::readconfig()
+{
+    if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "无法打开文件进行读取";
+        return;
+    }
+
+    QTextStream in(&config);
+    // 按行读取文件内容并存储到相应的变量中
+    if (!in.atEnd()) {
+        Ip=in.readLine();
+    }
+    if (!in.atEnd()) {
+        UsernamE = in.readLine();
+    }
+    if (!in.atEnd()) {
+        Password = in.readLine();
+    }
+
+    config.close();
+
+    // 显示读取的配置
+    qDebug() << "读取的配置:";
+    qDebug() << "IP:" << Ip;
+    qDebug() << "Username:" << UsernamE;
+    qDebug() << "Password:" << Password;
+    // 如果有需要，可以在这里将读取的值更新到UI控件
+}
+
+
+
 
