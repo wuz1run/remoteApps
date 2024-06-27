@@ -4,11 +4,11 @@
 trayIcon::trayIcon(QWidget *parent)
     : QMainWindow(parent),
     trayMenu(new QMenu(this)),
-    showAction(new QAction("Show Main Window", this)),
-    quitAction(new QAction("Quit", this))
+    showAction(new QAction("USB Device Control", this)),
+    quitAction(new QAction("Quit USB Control", this))
 {
     trayicon.setToolTip("This is a demo of tooltip");
-    trayicon.setIcon(QIcon("C:\\Users\\wuzir\\Desktop\\icon.png")); // Use the resource path
+    trayicon.setIcon(QIcon("/usr/share/RemoteAPPs/resourses/icon.png")); // Use the resource path
 
     // Set up the tray menu
     trayMenu->addAction(showAction);
@@ -41,5 +41,5 @@ void trayIcon::showMainWindow()
 
 void trayIcon::quitApplication()
 {
-
+    this->destroy();
 }
