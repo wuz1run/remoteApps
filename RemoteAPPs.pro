@@ -10,9 +10,11 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
+    trayicon.cpp \
     widget.cpp
 
 HEADERS += \
+    trayicon.h \
     ui_dialog.h \
     widget.h
 
@@ -25,6 +27,11 @@ target.path = /usr/local/bin
 library.path = /usr/local/lib
 !isEmpty(target.path):
 INSTALLS += target library
+
+RESOURCES +=
+
+DISTFILES += \
+    resourse/icon.png
 
 
 
