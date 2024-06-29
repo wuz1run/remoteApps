@@ -2,10 +2,13 @@
 #include "QCommandLineParser"
 #include <QApplication>
 #include "QMessageBox"
+#include "trayicon.h"
+#include "QMessageBox"
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QCommandLineParser parser;
+     trayIcon icon;
     Widget w;
     parser.process(a);
     QString Path;

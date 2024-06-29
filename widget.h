@@ -28,6 +28,8 @@ private slots:
     void handleLnk(const QString &File);
     void handleExe(const QString &File);
     void rdpConnection();
+    void readconfig();
+    QString getIp();
 
     bool isLnkFile(const QByteArray &link);
     int bytes2short(const QByteArray &bytes, int off);
@@ -45,5 +47,6 @@ private:
     Ui::Widget *ui;
     QTcpSocket *socket;
     QTcpServer *server;
+    Ui_Dialog dialog;
 };
 #endif // WIDGET_H

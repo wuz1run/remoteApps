@@ -26,6 +26,7 @@ public:
     QLineEdit *Passworder;
     QLabel *lable1;
     QLabel *label;
+    ~Ui_Dialog();
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
@@ -69,6 +70,7 @@ namespace Ui {
 class Dialog: public Ui_Dialog {private slots:
 
 private:
+
 };
 } // namespace Ui
 
