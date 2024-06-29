@@ -15,6 +15,7 @@ QFile file;
 QString LnkInLinux;
 QString ExeInLinux;
 Ui_Dialog dialog;
+QStringList DriveList;
 QFile config("/usr/share/RemoteAPPs/config");
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
@@ -22,18 +23,23 @@ Widget::Widget(QWidget *parent)
 {
     socket=new QTcpSocket;
     server=new QTcpServer;
-    //创建Socket和Server对象
+    server2=new QTcpServer;
+    //创建Socket,Server,Server2对象
     server->listen(QHostAddress::Any,4567);
     //server监听任何QHostAddress和4567端口
+    server2->listen(QHostAddress::Any,1234);
+    //server2监听任何QHostAddress和1234端口
     connect(server,&QTcpServer::newConnection,this,&Widget::NewConnectionHandler);
     //将Tcpserver的newConnection 信号与Widget里的NewConnectionHandler连接，让NewConnectionHandler来处理信号
+    connect(server2,&QTcpServer::newConnection,this,&Widget::NewConnectionHandler2);
+
     config.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream in(&config);
     ui->setupUi(this);
     ui->IP->setText(in.readLine());
     config.close();
 
-   //Ui设置
+    //Ui设置
 
 }
 
@@ -45,6 +51,12 @@ Widget::~Widget()
 QString Widget::getIp()
 {
     return ui->IP->text();
+}
+Ui_Dialog::~Ui_Dialog()
+{
+
+    UsernamE=Usernamer->text();
+    Password=Passworder->text();
 }
 bool Widget::createFolder(const QString &filePath)
 {
@@ -154,6 +166,7 @@ void Widget::handleLnk(const QString &File)
 {
     QString ans=parseLink(File);
     QMessageBox::warning(this,"lnk",ans);
+    QProcess::startDetached(buildCommand(Ip,ans,UsernamE,Password));
 }
 
 void Widget::handleExe(const QString &File)
@@ -329,6 +342,36 @@ void Widget::readconfig()
     qDebug() << "Password:" << Password;
     // 如果有需要，可以在这里将读取的值更新到UI控件
 }
+void Widget::NewConnectionHandler2()
+{
+    QTcpSocket *s=(QTcpSocket *)server->nextPendingConnection();
+    connect(s,&QTcpSocket::readyRead,this,&Widget::readData2);
+    qDebug()<<"new connection established";
+    QMessageBox::information(this,"connected socket","Info");
+
+}
+
+
+QStringList Widget::readData2()
+{
+    qDebug() << "The widget is ready to read data";
+
+    QTcpSocket *clientSocket = server->nextPendingConnection();
+    connect(clientSocket, &QTcpSocket::readyRead, [this, clientSocket]() {
+        QByteArray datium = clientSocket->readAll();
+        QString dataString = QString::fromUtf8(datium);
+         DriveList = dataString.split("");
+        // 使用空字符串分隔符
+
+        qDebug() << "Received data:" << dataString;
+        qDebug() << "Data list:" << DriveList;
+
+        clientSocket->deleteLater();
+
+    });
+    return DriveList;
+}
+
 
 
 
