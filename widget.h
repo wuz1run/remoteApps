@@ -22,6 +22,7 @@ public:
 
 private slots:
     void on_pushButton_clicked();
+    bool createFolder(const QString &filePath);
     void readData();
     void NewConnectionHandler();
     void handleLnk(const QString &File);
@@ -39,12 +40,10 @@ private slots:
 
     void on_OpenSettings_clicked();
     void openDialog();
-    void readconfig();
-    QString getIp();
+
 private:
     Ui::Widget *ui;
     QTcpSocket *socket;
     QTcpServer *server;
-    Ui_Dialog dialog;
 };
 #endif // WIDGET_H

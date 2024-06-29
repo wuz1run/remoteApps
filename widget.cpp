@@ -12,10 +12,10 @@ QString Ip;
 QString UsernamE;
 QString Password;
 QFile file;
+
 QString LnkInLinux;
 QString ExeInLinux;
-Ui_Dialog dialog;
-QFile config("/usr/share/RemoteAPPs/config");
+
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
@@ -27,12 +27,7 @@ Widget::Widget(QWidget *parent)
     //server监听任何QHostAddress和4567端口
     connect(server,&QTcpServer::newConnection,this,&Widget::NewConnectionHandler);
     //将Tcpserver的newConnection 信号与Widget里的NewConnectionHandler连接，让NewConnectionHandler来处理信号
-    config.open(QIODevice::ReadOnly | QIODevice::Text);
-    QTextStream in(&config);
     ui->setupUi(this);
-    ui->IP->setText(in.readLine());
-    config.close();
-
    //Ui设置
 
 }
@@ -42,11 +37,11 @@ Widget::~Widget()
     delete ui;
 
 }
-QString Widget::getIp()
+Ui_Dialog::~Ui_Dialog()
 {
-    return ui->IP->text();
+    UsernamE=Usernamer->text();
+    Password=Passworder->text();
 }
-
 
 //析构函数
 /**************************************
@@ -81,44 +76,55 @@ void Widget::NewConnectionHandler()
     //复制连接中的socket给另一个函数使用
 }
 
+bool Widget::createFolder(const QString &filePath)
+{
+    QDir dir;
+    if(!dir.exists(filePath))
+    {
+        if(dir.mkpath(filePath))
+        {
+            qDebug()<<"Folder created successfully at"<<filePath;
+            return true;
+        }else{
+            qDebug()<<"Failed to create folder at"<<filePath;
+            return false;
+        }
+    }else{
+        return true;
+    }
+}//创建文件夹,用来储存windows传来的lnk
+
 void Widget::readData()
 {
     qDebug()<<"the widget is ready to read data";
     //这就是readData函数，来处理传入的socket
-    if (!file.isOpen()) {
-        QString filePath = QFileDialog::getSaveFileName(nullptr, "Save File As");
 
-        if (filePath.isEmpty()) {
+    QTcpSocket *clientSocket = qobject_cast <QTcpSocket*>(sender());
 
-            qDebug() << "No file selected";
-
-            return;
-        }
-        file.setFileName(filePath);
-
-        if (!file.open(QIODevice::WriteOnly)) {
-
-            qDebug() << "Could not open file for writing";
-
-            return;
-        }
-
+    if(!clientSocket){
+        return;
     }
-    //QFileDialog选择存储路径，后期应该删除修改为固定路径
-    QByteArray data = socket->readAll();
-    //数据只能存在QByteArray中，使用传入socket的realAll方法读取
+
+    if(!file.isOpen()){
+        file.setFileName("received_file.lnk");
+        if(!file.open(QIODevice::WriteOnly)){
+            qDebug()<<"Failed to open file for writing";
+            return;
+        }
+    }
+
+    QByteArray data = clientSocket->readAll();
     file.write(data);
-    //将data写到file中
-    file.close();
-    //解除占用
-}
+
+}//处理传入的文件
+
 void Widget::on_pushButton_clicked()
 {
     Ip=ui->IP->text();
     qDebug()<<"server opened";
     //获取输入的IP
     socket->connectToHost(QHostAddress(Ip),4567);
-        //连接socket
+    //连接socket
 }
 /*
  * 以上是TCP相关的代码
@@ -144,18 +150,19 @@ void Widget::handleLnk(const QString &File)
 {
     QString ans=parseLink(File);
     QMessageBox::warning(this,"lnk",ans);
-
+    buildCommand(Ip,ans,UsernamE,Password);
 }
 
 void Widget::handleExe(const QString &File)
 {
     QMessageBox::warning(this,"exe",File);
+    QString ans=parseLink(File);
     QFile ExeFile(File);
     QByteArray FileArray=ExeFile.readAll();
     socket->write(FileArray);
     socket->flush();
     QMessageBox::warning(this,"sent executable",File);
-
+    buildCommand(Ip,ans,UsernamE,Password);
 
 }
 /*以上是处理图形化界面/终端的代码
@@ -257,6 +264,8 @@ void Widget::rdpConnection()
  *
  *
  */
+
+
 void Widget::on_OpenSettings_clicked()
 {
     openDialog();
@@ -264,63 +273,12 @@ void Widget::on_OpenSettings_clicked()
 
 void Widget::openDialog()
 {
-    QDialog *dialogue = new QDialog(this);
-    readconfig();
-    dialog.setupUi(dialogue);
+    QDialog dialogue(nullptr);
+    Ui_Dialog dialog;
+    dialog.setupUi(&dialogue);
     dialog.Usernamer->setText(UsernamE);
     dialog.Passworder->setText(Password);
+    dialogue.exec();
 
-    // Connect to accepted signal from QDialog itself
-    connect(dialogue, &QDialog::accepted, this, [this]() {
-        UsernamE = dialog.Usernamer->text();
-        Password = dialog.Passworder->text();
-
-        QTextStream out(&config);
-        Ip=ui->IP->text();
-        if (config.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            out << Ip << Qt::endl;
-            out << UsernamE << Qt::endl;
-            out << Password << Qt::endl;
-            config.close();
-        } else {
-            qDebug() << "Failed to open config file for writing";
-        }
-
-    });
-
-    dialogue->exec();
 }
-
-
-void Widget::readconfig()
-{
-    if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "无法打开文件进行读取";
-        return;
-    }
-
-    QTextStream in(&config);
-    // 按行读取文件内容并存储到相应的变量中
-    if (!in.atEnd()) {
-        Ip=in.readLine();
-    }
-    if (!in.atEnd()) {
-        UsernamE = in.readLine();
-    }
-    if (!in.atEnd()) {
-        Password = in.readLine();
-    }
-
-    config.close();
-
-    // 显示读取的配置
-    qDebug() << "读取的配置:";
-    qDebug() << "IP:" << Ip;
-    qDebug() << "Username:" << UsernamE;
-    qDebug() << "Password:" << Password;
-    // 如果有需要，可以在这里将读取的值更新到UI控件
-}
-
-
-
 
