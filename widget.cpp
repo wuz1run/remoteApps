@@ -12,7 +12,6 @@ QString Ip;
 QString UsernamE;
 QString Password;
 QFile file;
-
 QString LnkInLinux;
 QString ExeInLinux;
 Ui_Dialog dialog;
@@ -33,9 +32,8 @@ Widget::Widget(QWidget *parent)
     ui->setupUi(this);
     ui->IP->setText(in.readLine());
     config.close();
-    ui->setupUi(this);
-   //Ui设置
 
+   //Ui设置
 
 }
 
@@ -46,13 +44,26 @@ Widget::~Widget()
 }
 QString Widget::getIp()
 {
-
+    return ui->IP->text();
 }
-Ui_Dialog::~Ui_Dialog()
+bool Widget::createFolder(const QString &filePath)
 {
-    UsernamE=Usernamer->text();
-    Password=Passworder->text();
-}
+    QDir dir;
+    if(!dir.exists(filePath))
+    {
+        if(dir.mkpath(filePath))
+        {
+            qDebug()<<"Folder created successfully at"<<filePath;
+            return true;
+        }else{
+            qDebug()<<"Failed to create folder at"<<filePath;
+            return false;
+        }
+    }else{
+        return true;
+    }
+}//创建文件夹,用来储存windows传来的lnk
+
 
 //析构函数
 /**************************************
@@ -87,24 +98,6 @@ void Widget::NewConnectionHandler()
     //复制连接中的socket给另一个函数使用
 }
 
-bool Widget::createFolder(const QString &filePath)
-{
-    QDir dir;
-    if(!dir.exists(filePath))
-    {
-        if(dir.mkpath(filePath))
-        {
-            qDebug()<<"Folder created successfully at"<<filePath;
-            return true;
-        }else{
-            qDebug()<<"Failed to create folder at"<<filePath;
-            return false;
-        }
-    }else{
-        return true;
-    }
-}//创建文件夹,用来储存windows传来的lnk
-
 void Widget::readData()
 {
     qDebug()<<"the widget is ready to read data";
@@ -135,7 +128,7 @@ void Widget::on_pushButton_clicked()
     qDebug()<<"server opened";
     //获取输入的IP
     socket->connectToHost(QHostAddress(Ip),4567);
-    //连接socket
+        //连接socket
 }
 /*
  * 以上是TCP相关的代码
@@ -161,19 +154,17 @@ void Widget::handleLnk(const QString &File)
 {
     QString ans=parseLink(File);
     QMessageBox::warning(this,"lnk",ans);
-    buildCommand(Ip,ans,UsernamE,Password);
 }
 
 void Widget::handleExe(const QString &File)
 {
     QMessageBox::warning(this,"exe",File);
-    QString ans=parseLink(File);
     QFile ExeFile(File);
     QByteArray FileArray=ExeFile.readAll();
     socket->write(FileArray);
     socket->flush();
     QMessageBox::warning(this,"sent executable",File);
-    buildCommand(Ip,ans,UsernamE,Password);
+
 
 }
 /*以上是处理图形化界面/终端的代码
@@ -275,8 +266,6 @@ void Widget::rdpConnection()
  *
  *
  */
-
-
 void Widget::on_OpenSettings_clicked()
 {
     openDialog();
@@ -289,6 +278,8 @@ void Widget::openDialog()
     dialog.setupUi(dialogue);
     dialog.Usernamer->setText(UsernamE);
     dialog.Passworder->setText(Password);
+
+    // Connect to accepted signal from QDialog itself
     connect(dialogue, &QDialog::accepted, this, [this]() {
         UsernamE = dialog.Usernamer->text();
         Password = dialog.Passworder->text();
@@ -308,6 +299,8 @@ void Widget::openDialog()
 
     dialogue->exec();
 }
+
+
 void Widget::readconfig()
 {
     if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {
