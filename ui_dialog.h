@@ -26,6 +26,7 @@ public:
     QLineEdit *Passworder;
     QLabel *lable1;
     QLabel *label;
+    ~Ui_Dialog();
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
