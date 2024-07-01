@@ -19,6 +19,8 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
      void openedFile(const QString &File);
+    QString getDesktopPath();
+    QString buildDriveCommand(const QString &ip, const QString &drivesymbol, const QString &username, const QString &password);
 
 private slots:
     void on_pushButton_clicked();
@@ -35,7 +37,7 @@ private slots:
     QString buildCommand(const QString &ip, const QString &filePath, const QString &username, const QString &password);
 
     void on_TestButton_clicked();
-
+    void handleDrive();
 
     void on_OpenSettings_clicked();
     void openDialog();
@@ -49,5 +51,6 @@ private:
     QTcpServer *server;
     Ui_Dialog dialog;
     QTcpServer *server2;
+
 };
 #endif // WIDGET_H
