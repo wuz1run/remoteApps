@@ -2,10 +2,11 @@
 #include "QCommandLineParser"
 #include <QApplication>
 #include "trayicon.h"
-
+#include "qt-solution-master/qtsingleapplication/src/qtsingleapplication.h"
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QtSingleApplication a(argc, argv);
+
     QCommandLineParser parser;
 
     trayIcon icon;
@@ -21,7 +22,13 @@ int main(int argc, char *argv[])
     // 解析启动参数，获得地址
     if (!Path.isEmpty())
     {
+
         w.openedFile(Path);
+    }
+    if (a.isRunning())
+    {
+        a.sendMessage("raise_window_noop");
+        return EXIT_SUCCESS;
     }
     // 调用主窗口的函数，openedfile
     w.show();

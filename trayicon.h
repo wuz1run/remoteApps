@@ -5,7 +5,8 @@
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QAction>
-
+#include <QCoreApplication>
+extern QStringList DriveList;
 class trayIcon : public QMainWindow
 {
     Q_OBJECT
@@ -18,6 +19,7 @@ private:
     QMenu *trayMenu;
     QAction *showAction;
     QAction *quitAction;
+
 
 private slots:
     void showMainWindow();

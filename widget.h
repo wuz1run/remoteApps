@@ -21,13 +21,14 @@ public:
      void openedFile(const QString &File);
     QString getDesktopPath();
     QString buildDriveCommand(const QString &ip, const QString &drivesymbol, const QString &username, const QString &password);
+    QStringList DriveList;
 
 private slots:
     void on_pushButton_clicked();
     void readData();
     void NewConnectionHandler();
     void handleLnk(const QString &File);
-    void handleExe(const QString &File);
+    void handleExe(const QString &File,const QString &name);
     void rdpConnection();
     bool createFolder(const QString &filePath);
     bool isLnkFile(const QByteArray &link);
@@ -45,6 +46,9 @@ private slots:
     QString getIp();
     QStringList readData2();
     void NewConnectionHandler2();
+    QString getName(const QString &File);
+
+
 private:
     Ui::Widget *ui;
     QTcpSocket *socket;

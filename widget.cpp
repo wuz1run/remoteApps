@@ -8,7 +8,9 @@
 #include "QFileDialog"
 #include "QMessageBox"
 #include "QDebug"
-#include  "QInputDialog"
+#include "QInputDialog"
+#include "QDir"
+
 QString Ip;
 QString UsernamE;
 QString Password;
@@ -16,215 +18,161 @@ QFile file;
 QString LnkInLinux;
 QString ExeInLinux;
 Ui_Dialog dialog;
-QStringList DriveList;
+QStringList DriveList={"A","B","C"};
 QFile config("/usr/share/RemoteAPPs/config");
+
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
+    , socket(new QTcpSocket(this))
+    , server(new QTcpServer(this))
 {
-    socket=new QTcpSocket;
-    server=new QTcpServer;
-    server2=new QTcpServer;
-    //创建Socket,Server,Server2对象
-    server->listen(QHostAddress::Any,4567);
-    //server监听任何QHostAddress和4567端口
-    server2->listen(QHostAddress::Any,1234);
-    //server2监听任何QHostAddress和1234端口
-    connect(server,&QTcpServer::newConnection,this,&Widget::NewConnectionHandler);
-
-    //将Tcpserver的newConnection 信号与Widget里的NewConnectionHandler连接，让NewConnectionHandler来处理信号
-    connect(server2,&QTcpServer::newConnection,this,&Widget::NewConnectionHandler2);
-
-    config.open(QIODevice::ReadOnly | QIODevice::Text);
-    QTextStream in(&config);
-
     ui->setupUi(this);
-     getDesktopPath();
-    ui->IP->setText(in.readLine());
-    config.close();
-    readconfig();
-    socket->connectToHost(QHostAddress(Ip),4567);
-    //Ui设置
 
+    // 创建Server对象并监听
+    if (!server->listen(QHostAddress::Any, 4567)) {
+        qDebug() << "Server could not start!";
+    } else {
+        qDebug() << "Server started!";
+        connect(server, &QTcpServer::newConnection, this, &Widget::NewConnectionHandler);
+    }
+
+    // 读取配置文件
+    if (config.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&config);
+        ui->IP->setText(in.readLine());
+        config.close();
+    }
+
+    readconfig();
 }
 
 Widget::~Widget()
 {
     delete ui;
-
 }
+
 QString Widget::getIp()
 {
     return ui->IP->text();
 }
+
 Ui_Dialog::~Ui_Dialog()
 {
-    UsernamE=Usernamer->text();
-    Password=Passworder->text();
-
+    UsernamE = Usernamer->text();
+    Password = Passworder->text();
 }
+
 bool Widget::createFolder(const QString &filePath)
 {
     QDir dir;
-    if(!dir.exists(filePath))
-    {
-        if(dir.mkpath(filePath))
-        {
-            qDebug()<<"Folder created successfully at"<<filePath;
+    if (!dir.exists(filePath)) {
+        if (dir.mkpath(filePath)) {
+            qDebug() << "Folder created successfully at" << filePath;
             return true;
-        }else{
-            qDebug()<<"Failed to create folder at"<<filePath;
+        } else {
+            qDebug() << "Failed to create folder at" << filePath;
             return false;
         }
-    }else{
+    } else {
         return true;
     }
-}//创建文件夹,用来储存windows传来的lnk
-
-
-//析构函数
-/**************************************
- * 下面我写了三个函数，void handleLnk();void handleExe();void rdpConnection();
- * 拿来处理lnk文件，exe文件（远程安装）还有连接--developed 5.29
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- * *************************************/
+}
 
 void Widget::NewConnectionHandler()
 {
-    QTcpSocket *s=(QTcpSocket *)server->nextPendingConnection();
-    //传递参数，形式参数s作为server连接中的对象
-    connect(s,&QTcpSocket::readyRead,this,&Widget::readData);
-    //s 作为发送的socket会发出readyRead信号，将其与readData函数连接。让readData来处理
-    qDebug()<<"new connection established";
-    //debug输出
-    QMessageBox::information(this,"connected socket","Info");
-    //弹框表明连接成功
-    socket=s;
-    //复制连接中的socket给另一个函数使用
+    QTcpSocket *clientSocket = server->nextPendingConnection();
+    connect(clientSocket, &QTcpSocket::readyRead, this, &Widget::readData);
+    qDebug() << "New connection established";
+    QMessageBox::information(this, "Connected Socket", "Info");
 }
 
 void Widget::readData()
 {
-    qDebug()<<"the widget is ready to read data";
-    //这就是readData函数，来处理传入的socket
-    QByteArray data = socket->readAll();
-    QString str(data);
-    DriveList=str.split("");
-
-
-
-}//处理传入的文件
+    QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
+    if (clientSocket) {
+        qDebug() << "The widget is ready to read data";
+        QByteArray data = clientSocket->readAll();
+        QString str(data);
+        DriveList = str.split("");
+        qDebug() << "Received data:" << str;
+        qDebug() << "Data list:" << DriveList;
+    }
+}
 
 void Widget::on_pushButton_clicked()
-{   QString Ip = ui->IP->text();
-    qDebug() << "server opened";
-
-    // 获取输入的IP
-    QTcpSocket *socket = new QTcpSocket();
-    socket->connectToHost(QHostAddress(Ip), 4567);
+{
+    QString Ip = ui->IP->text();
+    qDebug() << "Server opened";
 
     QProcess process, processer;
     QString commandtemp = "mkdir " + Widget::getDesktopPath() + "/RemoteAPPs";
     QString command2 = Widget::buildDriveCommand(Ip, "Test", UsernamE, Password);
     bool ok;
 
-    // 启动mkdir进程
     process.start(commandtemp);
     if (!process.waitForStarted()) {
         qDebug() << "Failed to start process for mkdir";
         return;
     }
     process.waitForFinished();
-    QMessageBox::warning(this,"11","1111");
-    // 启动第二个进程并写入密码
+
     QString passwordLinux = QInputDialog::getText(nullptr, "Password", "Enter your sudo password:", QLineEdit::Password, "", &ok);
     if (!ok || passwordLinux.isEmpty()) {
         qDebug() << "Password input cancelled or empty.";
         return;
     }
-    processer.start(command2);
-    processer.write(passwordLinux.toUtf8()+'\n');
-        QMessageBox::warning(this,"11","1112");
-    processer.waitForFinished();
-    QMessageBox::warning(this,"11","1113");
-    // 使用write方法写入密码，确保写入时进程已经启动
 
-QMessageBox::warning(this,"11","1113");
-    // 读取输出
+    processer.start(command2);
+    processer.write(passwordLinux.toUtf8() + '\n');
+    processer.waitForFinished();
+
     QString stdOutput = processer.readAllStandardOutput();
     QString stdError = processer.readAllStandardError();
-
     ui->textEdit->setText(stdOutput);
     ui->textEdit->setText(stdError);
-    // 执行远程命令
 }
-/*
- * 以上是TCP相关的代码
- *
- *
- *
- */
+
 void Widget::openedFile(const QString &File)
 {
     QFileInfo fileTemp(File);
-    QString extend=fileTemp.suffix();
-
-    if(extend=="lnk")
-    {
+    QString extend = fileTemp.suffix();
+    QString name = fileTemp.fileName();
+    if (extend == "lnk") {
         handleLnk(File);
+    } else if (extend == "exe") {
+        handleExe(File, name);
     }
-    else if(extend=="exe")
-    {
-        handleExe(File);
-    }
-
 }
+
 void Widget::handleLnk(const QString &File)
 {
-    QString ans=parseLink(File);
-    QMessageBox::warning(this,"lnk",ans);
-    QProcess::startDetached(buildCommand(Ip,ans,UsernamE,Password));
+    QString ans = parseLink(File);
+    QMessageBox::warning(this, "lnk", ans);
+    QProcess::startDetached(buildCommand(Ip, ans, UsernamE, Password));
 }
 
-void Widget::handleExe(const QString &File)
+void Widget::handleExe(const QString &File, const QString &name)
 {
-    QMessageBox::warning(this,"exe",File);
-    QFile ExeFile(File);
-    QByteArray FileArray=ExeFile.readAll();
-    socket->write(FileArray);
-    socket->flush();
-    QMessageBox::warning(this,"sent executable",File);
-
-
-}
-/*以上是处理图形化界面/终端的代码
- *
- *
- *
- *
- */
-
-bool Widget::isLnkFile(const QByteArray &link) {
-    return link[0x00] == 0x4C;  // 76, 'L', 0x4C代表lnk文件格式
+    QProcess process;
+    process.start("cp " + File + " " + getDesktopPath() + "/RemoteAPPs");
+    process.waitForFinished();
+    QString ans = getName(name);
+    QProcess::startDetached(buildCommand(Ip, ans, UsernamE, Password));
 }
 
-int Widget::bytes2short(const QByteArray &bytes, int off) {
+bool Widget::isLnkFile(const QByteArray &link)
+{
+    return link[0x00] == 0x4C;
+}
+
+int Widget::bytes2short(const QByteArray &bytes, int off)
+{
     return static_cast<unsigned char>(bytes[off]) | (static_cast<unsigned char>(bytes[off + 1]) << 8);
 }
 
-QString Widget::getNullDelimitedString(const QByteArray &bytes, int off) {
+QString Widget::getNullDelimitedString(const QByteArray &bytes, int off)
+{
     int len = 0;
     while (bytes[off + len] != '\0') {
         len++;
@@ -232,7 +180,8 @@ QString Widget::getNullDelimitedString(const QByteArray &bytes, int off) {
     return QString::fromUtf8(bytes.mid(off, len));
 }
 
-QString Widget::parseLink(const QString &filePath) {
+QString Widget::parseLink(const QString &filePath)
+{
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
         throw std::runtime_error("File not found");
@@ -249,8 +198,8 @@ QString Widget::parseLink(const QString &filePath) {
     unsigned char flags = link[0x14];
 
     int shell_len = 0;
-    if (flags & 0x1) {  // 判断是否包含shell item id list段
-        shell_len = bytes2short(link, 0x4C) + 2;  // 获取shell item id list段的总长度，加2是为了将link[0x4c]本身的长度计算在内
+    if (flags & 0x1) {
+        shell_len = bytes2short(link, 0x4C) + 2;
     }
 
     int file_start = 0x4C + shell_len;
@@ -260,27 +209,15 @@ QString Widget::parseLink(const QString &filePath) {
     qDebug() << "Real file path:" << real_file;
     return real_file;
 }
-/*
- *
- *
- *
- * 以上是解析lnk的代码
- *
- *
- *
- */
+
 void Widget::on_TestButton_clicked()
 {
-    QString testLnkPath= QFileDialog::getOpenFileName(nullptr,"choose file");
-    QString ans=parseLink(testLnkPath);
-    QMessageBox::warning(this,"test",ans);
-    Ip=ui->IP->text();
-    QString username=UsernamE;
-    QString password=Password;
-    QString command=buildCommand(Ip,ans,username,password);
-    QList <QString>commands;
-    commands.append(command);
-    qDebug()<<command;
+    QString testLnkPath = QFileDialog::getOpenFileName(nullptr, "Choose file");
+    QString ans = parseLink(testLnkPath);
+    QMessageBox::warning(this, "test", ans);
+    Ip = ui->IP->text();
+    QString command = buildCommand(Ip, ans, UsernamE, Password);
+    qDebug() << command;
     QProcess process;
     process.startDetached(command);
 }
@@ -288,21 +225,16 @@ void Widget::on_TestButton_clicked()
 void Widget::handleDrive()
 {
     QProcess process;
-    QString commandtemp="mkdir"+getDesktopPath();
-    process.start(commandtemp,DriveList);
-    for(QString s:DriveList)
-    {
-        process.start(buildDriveCommand(Ip,s,UsernamE,Password));
+    QString commandtemp = "mkdir " + getDesktopPath();
+    process.start(commandtemp, DriveList);
+    for (const QString &s : DriveList) {
+        process.start(buildDriveCommand(Ip, s, UsernamE, Password));
         process.waitForFinished();
     }
-
 }
 
- QString Widget::buildDriveCommand(const QString &ip, const QString &drivesymbol, const QString &username, const QString &password)
+QString Widget::buildDriveCommand(const QString &ip, const QString &drivesymbol, const QString &username, const QString &password)
 {
-
-       // 传递用户输入的密码
-
     QString command = QString("sudo -S mount -t cifs -o username=%1,password=%2,iocharset=utf8,dir_mode=0777,file_mode=0777,vers=3.0 //%3/%4 %5/RemoteAPPs")
                           .arg(username)
                           .arg(password)
@@ -312,33 +244,25 @@ void Widget::handleDrive()
     ui->textEdit->setText(command);
 
     return command;
-
-    //TODO
 }
-QString Widget::buildCommand(const QString &ip, const QString &filePath, const QString &username, const QString &password) {
-    // 使用QString::arg()来构建命令字符串
+
+QString Widget::buildCommand(const QString &ip, const QString &filePath, const QString &username, const QString &password)
+{
     QString command = QString("xfreerdp /v:%1 /u:%2 /p:%3 /app:\"%4\"")
                           .arg(ip)
                           .arg(username)
                           .arg(password)
                           .arg(filePath);
-    qDebug()<<command;
+    qDebug() << command;
     ui->textEdit->setText(command);
     return command;
 }
 
 void Widget::rdpConnection()
 {
-
+    // To be implemented
 }
-/*
- *
- *
- *
- * 以上是处理ip和rdp连接的代码，process的代码最后要移动到rdpConnection之中
- *
- *
- */
+
 void Widget::on_OpenSettings_clicked()
 {
     openDialog();
@@ -352,13 +276,12 @@ void Widget::openDialog()
     dialog.Usernamer->setText(UsernamE);
     dialog.Passworder->setText(Password);
 
-    // Connect to accepted signal from QDialog itself
     connect(dialogue, &QDialog::accepted, this, [this]() {
         UsernamE = dialog.Usernamer->text();
         Password = dialog.Passworder->text();
 
         QTextStream out(&config);
-        Ip=ui->IP->text();
+        Ip = ui->IP->text();
         if (config.open(QIODevice::WriteOnly | QIODevice::Text)) {
             out << Ip << endl;
             out << UsernamE << endl;
@@ -367,24 +290,21 @@ void Widget::openDialog()
         } else {
             qDebug() << "Failed to open config file for writing";
         }
-
     });
 
     dialogue->exec();
 }
 
-
 void Widget::readconfig()
 {
     if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "无法打开文件进行读取";
+        qDebug() << "Cannot open config file for reading";
         return;
     }
 
     QTextStream in(&config);
-    // 按行读取文件内容并存储到相应的变量中
     if (!in.atEnd()) {
-        Ip=in.readLine();
+        Ip = in.readLine();
     }
     if (!in.atEnd()) {
         UsernamE = in.readLine();
@@ -395,34 +315,37 @@ void Widget::readconfig()
 
     config.close();
 
-    // 显示读取的配置
-    qDebug() << "读取的配置:";
+    qDebug() << "Config read:";
     qDebug() << "IP:" << Ip;
     qDebug() << "Username:" << UsernamE;
     qDebug() << "Password:" << Password;
-    // 如果有需要，可以在这里将读取的值更新到UI控件
-}
-void Widget::NewConnectionHandler2()
-{
-    QTcpSocket *s=(QTcpSocket *)server->nextPendingConnection();
-    connect(s,&QTcpSocket::readyRead,this,&Widget::readData2);
-    qDebug()<<"new connection established";
-    QMessageBox::information(this,"connected socket","Info");
 }
 
- QString Widget::getDesktopPath()
+void Widget::NewConnectionHandler2()
+{
+    QTcpSocket *clientSocket = server->nextPendingConnection();
+    connect(clientSocket, &QTcpSocket::readyRead, this, &Widget::readData2);
+    qDebug() << "New connection established";
+    QMessageBox::information(this, "Connected Socket", "Info");
+}
+
+QString Widget::getName(const QString &name)
+{
+    return "C:\\Test\\" + name;
+}
+
+QString Widget::getDesktopPath()
 {
     QProcess process;
-    QString commandtemp="xdg-user-dir";
+    QString commandtemp = "xdg-user-dir";
     QStringList arguments;
-    arguments<<"DESKTOP";
-    process.start(commandtemp,arguments);
+    arguments << "DESKTOP";
+    process.start(commandtemp, arguments);
     process.waitForFinished();
-    QString output=process.readAllStandardOutput().trimmed();
+    QString output = process.readAllStandardOutput().trimmed();
     ui->textEdit->setText(output);
     return output;
 }
-
 
 QStringList Widget::readData2()
 {
@@ -432,14 +355,12 @@ QStringList Widget::readData2()
     connect(clientSocket, &QTcpSocket::readyRead, [this, clientSocket]() {
         QByteArray datium = clientSocket->readAll();
         QString dataString = QString::fromUtf8(datium);
-         DriveList = dataString.split("");
-        // 使用空字符串分隔符
+        DriveList = dataString.split("");
 
         qDebug() << "Received data:" << dataString;
         qDebug() << "Data list:" << DriveList;
 
         clientSocket->deleteLater();
-
     });
     return DriveList;
 }

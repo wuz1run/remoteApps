@@ -10,10 +10,14 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
+    qt-solution-master/qtsingleapplication/src/qtlocalpeer.cpp \
+    qt-solution-master/qtsingleapplication/src/qtsingleapplication.cpp \
     trayicon.cpp \
     widget.cpp
 
 HEADERS += \
+    qt-solution-master/qtsingleapplication/src/qtlocalpeer.h \
+    qt-solution-master/qtsingleapplication/src/qtsingleapplication.h \
     trayicon.h \
     ui_dialog.h \
     widget.h
