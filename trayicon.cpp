@@ -45,8 +45,7 @@ trayIcon::trayIcon(QWidget *parent)
 
 
     trayicon.show();
-    for(QString ss:DriveList)
-    QMessageBox::warning(nullptr,"111",ss);
+
 }
 
 void trayIcon::showMainWindow()

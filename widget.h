@@ -25,8 +25,6 @@ public:
 
 private slots:
     void on_pushButton_clicked();
-    void readData();
-    void NewConnectionHandler();
     void handleLnk(const QString &File);
     void handleExe(const QString &File,const QString &name);
     void rdpConnection();
@@ -36,25 +34,16 @@ private slots:
     QString getNullDelimitedString(const QByteArray &bytes, int off);
     QString parseLink(const QString &filePath);
     QString buildCommand(const QString &ip, const QString &filePath, const QString &username, const QString &password);
-
     void on_TestButton_clicked();
     void handleDrive();
-
     void on_OpenSettings_clicked();
     void openDialog();
     void readconfig();
     QString getIp();
-    QStringList readData2();
-    void NewConnectionHandler2();
     QString getName(const QString &File);
-
-
+    void getDrive();
 private:
     Ui::Widget *ui;
-    QTcpSocket *socket;
-    QTcpServer *server;
     Ui_Dialog dialog;
-    QTcpServer *server2;
-
 };
 #endif // WIDGET_H

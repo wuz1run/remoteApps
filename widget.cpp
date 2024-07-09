@@ -20,23 +20,11 @@ QString ExeInLinux;
 Ui_Dialog dialog;
 QStringList DriveList={"A","B","C"};
 QFile config("/usr/share/RemoteAPPs/config");
-
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
-    , socket(new QTcpSocket(this))
-    , server(new QTcpServer(this))
 {
     ui->setupUi(this);
-
-    // 创建Server对象并监听
-    if (!server->listen(QHostAddress::Any, 4567)) {
-        qDebug() << "Server could not start!";
-    } else {
-        qDebug() << "Server started!";
-        connect(server, &QTcpServer::newConnection, this, &Widget::NewConnectionHandler);
-    }
-
     // 读取配置文件
     if (config.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&config);
@@ -79,27 +67,6 @@ bool Widget::createFolder(const QString &filePath)
     }
 }
 
-void Widget::NewConnectionHandler()
-{
-    QTcpSocket *clientSocket = server->nextPendingConnection();
-    connect(clientSocket, &QTcpSocket::readyRead, this, &Widget::readData);
-    qDebug() << "New connection established";
-    QMessageBox::information(this, "Connected Socket", "Info");
-}
-
-void Widget::readData()
-{
-    QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
-    if (clientSocket) {
-        qDebug() << "The widget is ready to read data";
-        QByteArray data = clientSocket->readAll();
-        QString str(data);
-        DriveList = str.split("");
-        qDebug() << "Received data:" << str;
-        qDebug() << "Data list:" << DriveList;
-    }
-}
-
 void Widget::on_pushButton_clicked()
 {
     QString Ip = ui->IP->text();
@@ -131,6 +98,7 @@ void Widget::on_pushButton_clicked()
     QString stdError = processer.readAllStandardError();
     ui->textEdit->setText(stdOutput);
     ui->textEdit->setText(stdError);
+    getDrive();
 }
 
 void Widget::openedFile(const QString &File)
@@ -321,17 +289,26 @@ void Widget::readconfig()
     qDebug() << "Password:" << Password;
 }
 
-void Widget::NewConnectionHandler2()
-{
-    QTcpSocket *clientSocket = server->nextPendingConnection();
-    connect(clientSocket, &QTcpSocket::readyRead, this, &Widget::readData2);
-    qDebug() << "New connection established";
-    QMessageBox::information(this, "Connected Socket", "Info");
-}
 
 QString Widget::getName(const QString &name)
 {
     return "C:\\Test\\" + name;
+}
+
+void Widget::getDrive()
+{
+    QString drivePath=getDesktopPath()+"RemoteAPPs/config/drive.list";
+    QFile drive(drivePath);
+    if (!drive.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Cannot open drive file for reading";
+        return;
+    }
+
+    QTextStream in(&drive);
+    while(!in.atEnd())
+    {
+        DriveList.append(in.readLine());
+    }
 }
 
 QString Widget::getDesktopPath()
@@ -347,20 +324,4 @@ QString Widget::getDesktopPath()
     return output;
 }
 
-QStringList Widget::readData2()
-{
-    qDebug() << "The widget is ready to read data";
 
-    QTcpSocket *clientSocket = server->nextPendingConnection();
-    connect(clientSocket, &QTcpSocket::readyRead, [this, clientSocket]() {
-        QByteArray datium = clientSocket->readAll();
-        QString dataString = QString::fromUtf8(datium);
-        DriveList = dataString.split("");
-
-        qDebug() << "Received data:" << dataString;
-        qDebug() << "Data list:" << DriveList;
-
-        clientSocket->deleteLater();
-    });
-    return DriveList;
-}
